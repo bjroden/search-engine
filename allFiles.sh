@@ -1,3 +1,7 @@
 #!/bin/bash
 #!/usr/bin/python3
-for f in files/*; do python3 tokenTest.py $f > "/output/$f.txt"; done
+
+python3 hw1.py "$@"
+sort -nr output/sortedFrequency.txt -o output/sortedFrequency.txt
+sort -d output/sortedToken.txt -o output/sortedToken.txt
+echo "Sorting finished"

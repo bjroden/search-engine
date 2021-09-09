@@ -80,8 +80,11 @@ for i in sys.argv[1:]:
     for j in currentTokens:
         outputFile.write(str(currentTokens[j]) + '\t' + j + '\n')
 
-allOutputFile = open("output/allFiles.txt", 'w')
+sortedToken = open("output/sortedToken.txt", 'w')
+sortedFrequency = open("output/sortedFrequency.txt", 'w')
 for i in allTokens:
-    allOutputFile.write(str(allTokens[i]) + '\t' + i + '\n')
+    sortedToken.write(i + '\t' + str(allTokens[i]) + '\n')
+    sortedFrequency.write(str(allTokens[i]) + '\t' + i + '\n')
 
-print("Done")
+
+print("Python script finished")
