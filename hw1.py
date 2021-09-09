@@ -63,7 +63,7 @@ lexer = lex.lex()
 allTokens = Counter({})
 for i in sys.argv[1:]:
     try:
-        data = open(i).read()
+        data = open(i, 'r', encoding="latin-1").read()
         lexer.input(data)
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
