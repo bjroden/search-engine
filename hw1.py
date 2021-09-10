@@ -4,10 +4,14 @@
  # tokenizer for a simple expression evaluator for
  # numbers and +,-,*,/
  # ------------------------------------------------------------
+import os
 import ply.lex as lex
 import sys
 import re
 from collections import Counter
+from multiprocessing import Pool
+from os import cpu_count
+
 
 # List of token names.   This is always required
 tokens = (
@@ -66,13 +70,14 @@ def t_error(t):
 lexer = lex.lex()
 
 allTokens = Counter({})
-for i in sys.argv[1:]:
+#Function for single file process
+def tokenizeFile(i):
     try:
         data = open(i, 'r', encoding="latin-1").read()
         lexer.input(data)
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
-        continue
+        return
     currentTokens = Counter({})
     # Tokenize
     while True:
@@ -84,6 +89,12 @@ for i in sys.argv[1:]:
     outputFile = open("output/" + i + ".txt", 'w')
     for j in currentTokens:
         outputFile.write(str(currentTokens[j]) + '\t' + j + '\n')
+
+#Spawn a process for each file
+pool = Pool(os.cpu_count())
+pool.map(tokenizeFile, sys.argv[1:])
+pool.close()
+pool.join()
 
 sortedToken = open("output/sortedToken.txt", 'w')
 sortedFrequency = open("output/sortedFrequency.txt", 'w')
