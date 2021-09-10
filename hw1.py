@@ -11,12 +11,17 @@ from collections import Counter
 
 # List of token names.   This is always required
 tokens = (
-   'HTMLTAG',
-   'HYPERLINK',
-   'EMAIL',
-   'NUMBER',
-   'WORD',
+    'CSS'
+    'HTMLTAG',
+    'HYPERLINK',
+    'EMAIL',
+    'NUMBER',
+    'WORD',
 )
+
+def t_CSS(T):
+    #TODO: Check whether this is deleting valid tokens before brackets
+    r'\S+\s*{[^}]+}'
 
 def t_HTMLTAG(t):
     r'<[^>]+>'
@@ -31,7 +36,7 @@ def t_HYPERLINK(t):
     return t
 
 def t_EMAIL(t):
-    r'\S+@\S+\.[^<\s,?!.]+'
+    r'\S+@\S+\.[^<\s,?!.\xa0\x85]+'
     return t
 
 def t_NUMBER(t):
@@ -40,7 +45,7 @@ def t_NUMBER(t):
 
 def t_WORD(t):
     # Match non whitespace character followed by any number of non-< characters, followed by a non-punctuation mark
-    r'(\S(?!<))*[^<\s,?!.]'
+    r'(\S(?!<))*[^<\s,?!.\xa0\x85]'
     t.value = t.value.lower()
     return t
 
@@ -50,11 +55,11 @@ def t_newline(t):
     t.lexer.lineno += len(t.value)
 
 # A string containing ignored characters (spaces and tabs)
-t_ignore  = ' !?.,\t'
+t_ignore  = ' !?.,\t\xa0\x85'
 
 # Error handling rule
 def t_error(t):
-    #print("Illegal character '%s'" % t.value[0])
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # Build the lexer
@@ -63,7 +68,7 @@ lexer = lex.lex()
 allTokens = Counter({})
 for i in sys.argv[1:]:
     try:
-        data = open(i).read()
+        data = open(i, 'r', encoding="latin-1").read()
         lexer.input(data)
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
@@ -80,8 +85,11 @@ for i in sys.argv[1:]:
     for j in currentTokens:
         outputFile.write(str(currentTokens[j]) + '\t' + j + '\n')
 
-allOutputFile = open("output/allFiles.txt", 'w')
+sortedToken = open("output/sortedToken.txt", 'w')
+sortedFrequency = open("output/sortedFrequency.txt", 'w')
 for i in allTokens:
-    allOutputFile.write(str(allTokens[i]) + '\t' + i + '\n')
+    sortedToken.write(i + '\t' + str(allTokens[i]) + '\n')
+    sortedFrequency.write(str(allTokens[i]) + '\t' + i + '\n')
 
-print("Done")
+
+print("Python script finished")
