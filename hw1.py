@@ -11,12 +11,17 @@ from collections import Counter
 
 # List of token names.   This is always required
 tokens = (
-   'HTMLTAG',
-   'HYPERLINK',
-   'EMAIL',
-   'NUMBER',
-   'WORD',
+    'CSS'
+    'HTMLTAG',
+    'HYPERLINK',
+    'EMAIL',
+    'NUMBER',
+    'WORD',
 )
+
+def t_CSS(T):
+    #TODO: Check whether this is deleting valid tokens before brackets
+    r'\S+\s*{[^}]+}'
 
 def t_HTMLTAG(t):
     r'<[^>]+>'
