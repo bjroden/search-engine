@@ -21,7 +21,7 @@ tokens = (
 
 def t_CSS(T):
     #TODO: Check whether this is deleting valid tokens before brackets
-    r'\S+\s*{[^}]+}'
+    r'([\S^,]*,\s*)*\S+\s*{[^}]+}'
 
 def t_HTMLTAG(t):
     r'<[^>]+>'
