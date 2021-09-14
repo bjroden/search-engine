@@ -16,6 +16,7 @@ tokens = (
     'HYPERLINK',
     'EMAIL',
     'NUMBER',
+    'HTML_ENTITY',
     'WORD',
 )
 
@@ -42,6 +43,9 @@ def t_EMAIL(t):
 def t_NUMBER(t):
     r'\d+'
     return t
+
+def t_HTML_ENTITY(t):
+    r'\&(nbsp|lt|gt|amp|quot|apos|cent|pound|yen|euro|copy|reg|rsquo)'
 
 def t_WORD(t):
     # Match non whitespace character followed by any number of non-< characters, followed by a non-punctuation mark
