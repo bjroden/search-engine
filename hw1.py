@@ -15,6 +15,7 @@ tokens = (
     'EMAIL',
     'NUMBER',
     'HTML_ENTITY',
+    'WORD_WITH_HTML',
     'WORD',
 )
 
@@ -53,11 +54,17 @@ def t_NUMBER(t):
 # Regex to remove common html entities which the parser was otherwise unable to detect
 # No return statement because these are not useful for indexing
 def t_HTML_ENTITY(t):
-    r'\&(nbsp|lt|gt|amp|quot|apos|cent|pound|yen|euro|copy|reg|rsquo)'
+    r'\&\w+'
+
+def t_WORD_WITH_HTML(t):
+    r'\w+<[^>]+>(\w|\d|\'|-|<[^>]+>)*'
+    t.value = t.value.lower()
+    t.value = re.sub('<[^>]+>', '', t.value)
+    return(t)
 
 # TODO: Figure this out
 def t_WORD(t):
-    r'[^\s<>#&"()&;:!?.,\xa0\x85\xe2]+'
+    r'\w(\w|\'|-)*'
     t.value = t.value.lower()
     return t
 
@@ -71,7 +78,7 @@ t_ignore  = ' -"#>();:!?.,\t\xa0\x85\xe2'
 
 # TODO: Remove this
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    #print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # Create the parser
