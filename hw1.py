@@ -38,10 +38,12 @@ def t_HYPERLINK(t):
 
 def t_EMAIL(t):
     r'\S+@\S+\.[^<\s,?!.\xa0\x85]+'
+    t.value = re.sub('(@.*|<[^>]+>)', '', t.value)
     return t
 
 def t_NUMBER(t):
-    r'\d+'
+    r'(\d|,|\.|-)+'
+    t.value = re.sub('(,|\.|-)', '', t.value)
     return t
 
 def t_HTML_ENTITY(t):
