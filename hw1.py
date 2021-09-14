@@ -28,7 +28,7 @@ def t_CSS(T):
 # Regex checks for a "<", followed by an optional "/", followd by WORD, followed by any amount of "attribute=value", followed by optional whitespace, then ">"
 # No return statement because these are not useful for indexing
 def t_HTMLTAG(t):
-    r'<\/?\w+(\s*\w+=(\S(?!>))+)*\s*>'
+    r'<\/?\w+((\s*[^\s=>])+=(\s*[^\s=>])+)*\s*\/?>'
 
 # Regex checks for hyperlinks, which are words starting with http://, https://, or www., and any number of non-whitespace or htmltags following that
 # These starting elements are then scrubbed out
