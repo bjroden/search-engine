@@ -66,7 +66,7 @@ def t_WORD_WITH_HTML(t):
 
 # TODO: Figure this out
 def t_WORD(t):
-    r'\w(\w|\'|-)*'
+    r'\w(\w|\'|-)*(?<![\'-])\b'
     t.value = t.value.lower()
     return t
 
