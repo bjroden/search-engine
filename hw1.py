@@ -26,11 +26,12 @@ tokens = (
 def t_CSS(T):
     r'([\S^,]*,\s*)*\S+\s*{[^}]+}'
 
-# HTML Elements take the forms <WORD attribute1=value attribute2=value>, and </WORD>
-# Regex checks for a "<", followed by an optional "/", followd by WORD, followed by any amount of "attribute=value", followed by optional whitespace, then ">"
+# HTML Elements take the forms <! **** COMMENT / DOCTYPE ****>, or <WORD attribute1=value attribute2=value>, or </WORD>
+# Regex first checks for a "<", then first checks if there is a "!" character, in which case it will read until the next ">", since these are either comments or DOCTYPE declarations.
+# If no "!", it will look for "<" followed by an optional "/", followd by WORD, followed by any amount of "attribute=value", followed by optional whitespace, then ">"
 # No return statement because these are not useful for indexing
 def t_HTMLTAG(t):
-    r'<\/?\w+((\s*[^\s=>])+=(\s*[^\s=>])+)*\s*\/?>'
+    r'<(![^>]+|\/?\w+((\s*[^\s=>])+=(\s*[^\s=>])+)*\s*\/?)>'
 
 # Regex checks for hyperlinks, which are words starting with http://, https://, or www., and any number of non-whitespace or htmltags following that
 # These starting elements are then scrubbed out
