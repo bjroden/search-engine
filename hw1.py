@@ -5,6 +5,7 @@
 import ply.lex as lex
 import sys
 import re
+import os
 from collections import Counter
 
 # List of token types
@@ -84,12 +85,22 @@ def t_error(t):
 # Create the parser
 lexer = lex.lex()
 
+#Open paths
+indir = os.path.abspath(sys.argv[1])
+outdir = os.path.abspath(sys.argv[2])
+if not os.path.isdir(indir):
+    print("Error: invalid input path")
+    exit()
+if not os.path.isdir(outdir):
+    print("Error: invalid output path")
+    exit()
+
 # allTokens will be where all tokens are stored
 allTokens = Counter({})
-for i in sys.argv[1:]:
+for i in os.listdir(indir):
     # Open all files passed as parameters
     try:
-        data = open(i, 'r', encoding="latin-1").read()
+        data = open(indir + "/" + i, 'r', encoding="latin-1").read()
         lexer.input(data)
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
@@ -105,13 +116,16 @@ for i in sys.argv[1:]:
         allTokens[tok.value] += 1
         currentTokens[tok.value] += 1
     # Write all current tokens to a file
-    outputFile = open("output/" + i + ".txt", 'w')
-    for j in currentTokens:
-        outputFile.write(str(currentTokens[j]) + '\t' + j + '\n')
+    try:
+        outputFile = open(outdir + "/" + i + ".txt", 'w')
+        for j in currentTokens:
+                outputFile.write(str(currentTokens[j]) + '\t' + j + '\n')
+    except Exception as e:
+        print("Error writing to file " + j + ": " + str(e))
 
 # Write all tokens to two separate files. These will be sorted by the bash script.
-sortedToken = open("output/sortedToken.txt", 'w')
-sortedFrequency = open("output/sortedFrequency.txt", 'w')
+sortedToken = open(outdir + "/sortedToken.txt", 'w')
+sortedFrequency = open(outdir + "/sortedFrequency.txt", 'w')
 for i in allTokens:
     sortedToken.write(i + '\t' + str(allTokens[i]) + '\n')
     sortedFrequency.write(str(allTokens[i]) + '\t' + i + '\n')
