@@ -74,7 +74,7 @@ def t_newline(t):
     t.lexer.lineno += len(t.value)
 
 # Ignore these characters if they are not already part of an expression
-t_ignore  = ' -"#>();:!?.,\t\xa0\x85\xe2'
+t_ignore  = ' -"#>();:!?.,\t\xa0\x85\xe2\x00'
 
 # TODO: Remove this
 def t_error(t):
