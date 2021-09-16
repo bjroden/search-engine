@@ -16,7 +16,6 @@ tokens = (
     'EMAIL',
     'NUMBER',
     'HTML_ENTITY',
-    'WORD_WITH_HTML',
     'WORD',
 )
 
@@ -58,16 +57,11 @@ def t_NUMBER(t):
 def t_HTML_ENTITY(t):
     r'\&\w+'
 
-def t_WORD_WITH_HTML(t):
-    r'\w+<[^>]+>(\w|\d|\'|-|<[^>]+>)*'
-    t.value = t.value.lower()
-    t.value = re.sub('<[^>]+>', '', t.value)
-    return(t)
-
 # TODO: Figure this out
 def t_WORD(t):
-    r'\w(\w|\'|-)*(?<![\'-])\b'
+    r'\w(\w|\'|-|<[^>]+>)*'
     t.value = t.value.lower()
+    t.value = re.sub('(-|\'|<[^>]+>)', '', t.value)
     return t
 
 # TODO: Tracks line numbers for debugging
