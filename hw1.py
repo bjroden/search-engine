@@ -35,7 +35,7 @@ def t_HTMLTAG(t):
 # Regex checks for hyperlinks, which are words starting with http://, https://, or www., and any number of non-whitespace or htmltags following that
 # These starting elements are then scrubbed out
 def t_HYPERLINK(t):
-    r'(htt(p|ps):\/\/|www.)[^\s<]+'
+    r'(htt(p|ps):\/\/|www.)[^\s<\/]+'
     t.value = t.value.lower()
     t.value = re.sub(r'(https://|http://|www|\.)', '', t.value)
     return t
@@ -48,8 +48,8 @@ def t_EMAIL(t):
 
 # Regex to check for numbers, which include commas, decimals, and hyphens for phone numbers and then scrubs these elements out
 def t_NUMBER(t):
-    r'(\d|,|\.|-)+'
-    t.value = re.sub('(,|\.|-)', '', t.value)
+    r'[1-9](\d|,|\.|-)*'
+    t.value = re.sub('(,|-|\.\S*)', '', t.value)
     return t
 
 # Regex to remove common html entities which the parser was otherwise unable to detect
@@ -59,9 +59,9 @@ def t_HTML_ENTITY(t):
 
 # TODO: Figure this out
 def t_WORD(t):
-    r'\w(\w|\'|-|<[^>]+>)*'
+    r'[A-z](\w|\'|-|\.\w|<[^>]+>)*'
     t.value = t.value.lower()
-    t.value = re.sub('(-|\'|<[^>]+>)', '', t.value)
+    t.value = re.sub('(\.|-|\'|<[^>]+>)', '', t.value)
     return t
 
 # TODO: Tracks line numbers for debugging
@@ -70,7 +70,7 @@ def t_newline(t):
     t.lexer.lineno += len(t.value)
 
 # Ignore these characters if they are not already part of an expression
-t_ignore  = ' -"#>();:!?.,\t\xa0\x85\xe2\x00'
+t_ignore  = ' []+$|=%*{}/0-"#>();:!?.,\t\xa0\x85\xe2\x00'
 
 # TODO: Remove this
 def t_error(t):
