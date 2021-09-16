@@ -84,7 +84,7 @@ def t_error(t):
 # Create the parser
 lexer = lex.lex()
 
-#Open file directories
+# Open file directories
 indir = os.path.abspath(sys.argv[1])
 outdir = os.path.abspath(sys.argv[2])
 if not os.path.isdir(indir):
@@ -92,6 +92,14 @@ if not os.path.isdir(indir):
     exit()
 if not os.path.isdir(outdir):
     print("Error: invalid output path")
+    exit()
+# Make directory for tokenized files
+try:
+    os.mkdir(outdir + "/tokenizedFiles")
+except FileExistsError:
+    pass
+except Exception as e:
+    print("Error opening file: " + e)
     exit()
 
 # allTokens will be where all tokens are stored
@@ -102,7 +110,7 @@ for i in os.listdir(indir):
     try:
         data = open(indir + "/" + i, 'r', encoding="latin-1").read()
         lexer.input(data)
-        outputFile = open(outdir + "/" + i + ".txt", 'w')
+        outputFile = open(outdir + "/tokenizedFiles/" + i + ".txt", 'w')
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
         continue
