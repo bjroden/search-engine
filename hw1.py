@@ -97,6 +97,7 @@ for i in os.listdir(indir):
     try:
         data = open(indir + "/" + i, 'r', encoding="latin-1").read()
         lexer.input(data)
+        outputFile = open(outdir + "/" + i + ".txt", 'w')
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
         continue
@@ -104,19 +105,12 @@ for i in os.listdir(indir):
     # CurrentTokens is like alltokens, but only for the current file
     currentTokens = Counter({})
     while True:
-        # Read a token and add it to both allTokens and currentTokens
+        # Read a token add it to allTokens, and write it to the tokenized output file
         tok = lexer.token()
         if not tok:
             break
         allTokens[tok.value] += 1
-        currentTokens[tok.value] += 1
-    # Write all current tokens to a file
-    try:
-        outputFile = open(outdir + "/" + i + ".txt", 'w')
-        for j in currentTokens:
-                outputFile.write(str(currentTokens[j]) + '\t' + j + '\n')
-    except Exception as e:
-        print("Error writing to file " + j + ": " + str(e))
+        outputFile.write(tok.value + '\n')
 
 # Write all tokens to two separate files. These will be sorted by the bash script.
 sortedToken = open(outdir + "/sortedToken.txt", 'w')
