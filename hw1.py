@@ -1,6 +1,6 @@
 # Information Retrieval Homework 1
 # Author: Brian Roden
-# Program to parse files for tokens
+# Program to parse html files for tokens
 
 import ply.lex as lex
 import sys
@@ -32,8 +32,8 @@ def t_CSS(T):
 def t_HTMLTAG(t):
     r'<(![^>]+|\/?\w+((\s*[^\s=>])+=(\s*[^\s=>])+)*\s*\/?)>'
 
-# Regex checks for hyperlinks, which are words starting with http://, https://, or www., and any number of non-whitespace or htmltags following that
-# These starting elements are then scrubbed out
+# Regex checks for hyperlinks, which are words starting with http://, https://, or www., and any number of non-whitespace, html tags, or "/" is found (since including the specific subdirectory of the site is not useful for indexing)
+# The starting elements are then scrubbed out
 def t_HYPERLINK(t):
     r'(htt(p|ps):\/\/|www.)[^\s<\/]+'
     t.value = t.value.lower()
@@ -41,46 +41,50 @@ def t_HYPERLINK(t):
     return t
 
 # Regex to check for emails, which take the form "word@word.word"
+# HTML tags and everything following @ is removed since searching for "gmail" to get a specific email address is unlikely
 def t_EMAIL(t):
     r'\S+@\S+\.[^<\s,?!.\xa0\x85]+'
     t.value = re.sub('(@.*|<[^>]+>)', '', t.value)
     return t
 
-# Regex to check for numbers, which include commas, decimals, and hyphens for phone numbers and then scrubs these elements out
+# Regex to check for numbers, which include commas, decimals, and hyphens for phone numbers
+# Will not start with 0 since "01" and "1" should be the same in searches. Commas and hyphens are removed, as well as everything following the decimal since a search for "20.07" specifically would likely not be useful
 def t_NUMBER(t):
     r'[1-9](\d|,|\.|-)*'
     t.value = re.sub('(,|-|\.\S*)', '', t.value)
     return t
 
-# Regex to remove common html entities which the parser was otherwise unable to detect
+# Regex to remove common html entities like "&nbsp" which the parser was otherwise unable to detect
 # No return statement because these are not useful for indexing
 def t_HTML_ENTITY(t):
     r'\&\w+'
 
-# TODO: Figure this out
+# Words are similar to typical IDs, exxcept with special inclusions for allowing specific punctuation so tokens don't become improperly split.
+# These start with a A-z character, and can be followed by more characters, digits, hyphens, apostrophes, html tags, and periods for abbreviations like "PH.D"
+# These additions are included since "we'll" won't become "we" and "ll" separately, nor "<b>E</b>lephants" becoming "e" and "lephants". These are then removed with the re.sub expression to make for better indexing
+# Other punctuation marks, like ?, !, etc. are not typically connecting words together, so these are not included
 def t_WORD(t):
     r'[A-z](\w|\'|-|\.\w|<[^>]+>)*'
     t.value = t.value.lower()
     t.value = re.sub('(\.|-|\'|<[^>]+>)', '', t.value)
     return t
 
-# TODO: Tracks line numbers for debugging
+# Tracks line numbers with \n. Mostly for debugging purposes, but it's inclusion does not hurt performance.
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
-# Ignore these characters if they are not already part of an expression
+# Ignore these characters if they are not already a token. Improves performance since these won't have to be passed through the regex rules.
 t_ignore  = ' []+$|=%*{}/0-"#>();:!?.,\t\xa0\x85\xe2\x00'
 
-# TODO: Remove this
+# Skips letters that fail all token checks. Punctuation like & and < will use this a lot: they cannot be included in t_ignore since they are required for the start of some regex rules.
 def t_error(t):
-    #print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # Create the parser
 lexer = lex.lex()
 
-#Open paths
+#Open file directories
 indir = os.path.abspath(sys.argv[1])
 outdir = os.path.abspath(sys.argv[2])
 if not os.path.isdir(indir):
@@ -92,8 +96,9 @@ if not os.path.isdir(outdir):
 
 # allTokens will be where all tokens are stored
 allTokens = Counter({})
+# Tokenize every file in indir
 for i in os.listdir(indir):
-    # Open all files passed as parameters
+    # Open current input file and corresponding output file
     try:
         data = open(indir + "/" + i, 'r', encoding="latin-1").read()
         lexer.input(data)
@@ -102,10 +107,8 @@ for i in os.listdir(indir):
         print("Error opening file " + i + ": " + str(e))
         continue
 
-    # CurrentTokens is like alltokens, but only for the current file
-    currentTokens = Counter({})
+    # Read a token, add it to allTokens, and write it to the tokenized output file
     while True:
-        # Read a token add it to allTokens, and write it to the tokenized output file
         tok = lexer.token()
         if not tok:
             break
