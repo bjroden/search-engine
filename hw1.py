@@ -2,6 +2,7 @@
 # Author: Brian Roden
 # Program to parse html files for tokens
 
+from hashtable import HashTable
 import ply.lex as lex
 import sys
 import re
@@ -102,8 +103,8 @@ except Exception as e:
     print("Error opening file: " + e)
     exit()
 
-# allTokens will be where all tokens are stored
-allTokens = Counter({})
+# Total amount of tokens in all documents
+totalTokens = 0 
 # Tokenize every file in indir
 for i in os.listdir(indir):
     # Open current input file and corresponding output file
@@ -114,21 +115,19 @@ for i in os.listdir(indir):
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
         continue
-
-    # Read a token, add it to allTokens, and write it to the tokenized output file
+    
+    # Read tokens, add them to document hashTable, and increment counts
+    docHT = HashTable(50000)
+    docTokens = 0
     while True:
         tok = lexer.token()
         if not tok:
             break
-        allTokens[tok.value] += 1
-        outputFile.write(tok.value + '\n')
+        docHT.insert(tok.value, 1)
+        docTokens += 1
+    totalTokens += docTokens
+    # Write number of unique and total tokens to stdout
+    print("{}: {:n} unique, {:n} total".format(i, docHT.uniqueTokens, docTokens))
 
-# Write all tokens to two separate files. These will be sorted by the bash script.
-sortedToken = open(outdir + "/sortedToken.txt", 'w')
-sortedFrequency = open(outdir + "/sortedFrequency.txt", 'w')
-for i in allTokens:
-    sortedToken.write(i + '\t' + str(allTokens[i]) + '\n')
-    sortedFrequency.write(str(allTokens[i]) + '\t' + i + '\n')
-
-
-print("Python script finished")
+# Write total token count to stdout
+print("\nTotal tokens: {:n}".format(totalTokens))
