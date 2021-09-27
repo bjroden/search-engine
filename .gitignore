@@ -3,3 +3,4 @@ files.tar
 OLDfiles
 output
 .vscode
+__pycache__
