@@ -103,8 +103,9 @@ except Exception as e:
     print("Error opening file: " + e)
     exit()
 
-# Total amount of tokens in all documents
+# Initialize values
 totalTokens = 0 
+docHT = HashTable(50000)
 # Tokenize every file in indir
 for i in os.listdir(indir):
     # Open current input file and corresponding output file
@@ -117,7 +118,6 @@ for i in os.listdir(indir):
         continue
     
     # Read tokens, add them to document hashTable, and increment counts
-    docHT = HashTable(50000)
     docTokens = 0
     while True:
         tok = lexer.token()
@@ -126,8 +126,9 @@ for i in os.listdir(indir):
         docHT.insert(tok.value, 1)
         docTokens += 1
     totalTokens += docTokens
-    # Write number of unique and total tokens to stdout
+    # Write number of unique and total tokens to file, reset document hashtable to 0s
     outputFile.write("File: {}\nUnique: {:n}\nTotal: {:n}".format(i, docHT.uniqueTokens, docTokens))
+    docHT.reset()
 
 # Write total token count to stdout
 open(outdir + "/total.txt", 'w').write("\nTotal tokens: {:n}".format(totalTokens))

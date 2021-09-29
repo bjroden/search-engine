@@ -10,7 +10,11 @@ class HashTable:
         self.uniqueTokens=0
         self.slots=[None]*self.size # initialize keys
         self.data=[None]*self.size # initialize values
-
+    
+    def reset(self): # reset keys without creating new HT
+        self.uniqueTokens=0
+        self.slots=[None]*self.size # initialize keys
+    
     def hashfunction(self,key): # hash function to find the location
         h = hashlib.sha1() # any other algorithm found in hashlib.algorithms_guaranteed can be used here
         h.update(bytes(key, encoding="ascii"))
