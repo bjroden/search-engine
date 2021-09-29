@@ -96,7 +96,7 @@ if not os.path.isdir(outdir):
     exit()
 # Make directory for tokenized files
 try:
-    os.mkdir(outdir + "/tokenizedFiles")
+    os.mkdir(outdir + "/fileCounts")
 except FileExistsError:
     pass
 except Exception as e:
@@ -111,7 +111,7 @@ for i in os.listdir(indir):
     try:
         data = open(indir + "/" + i, 'r', encoding="latin-1").read()
         lexer.input(data)
-        outputFile = open(outdir + "/tokenizedFiles/" + i + ".txt", 'w')
+        outputFile = open(outdir + "/fileCounts/" + i + ".txt", 'w')
     except Exception as e:
         print("Error opening file " + i + ": " + str(e))
         continue
@@ -127,7 +127,7 @@ for i in os.listdir(indir):
         docTokens += 1
     totalTokens += docTokens
     # Write number of unique and total tokens to stdout
-    print("{}: {:n} unique, {:n} total".format(i, docHT.uniqueTokens, docTokens))
+    outputFile.write("File: {}\nUnique: {:n}\nTotal: {:n}".format(i, docHT.uniqueTokens, docTokens))
 
 # Write total token count to stdout
-print("\nTotal tokens: {:n}".format(totalTokens))
+open(outdir + "/total.txt", 'w').write("\nTotal tokens: {:n}".format(totalTokens))
