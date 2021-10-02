@@ -96,11 +96,11 @@ if not os.path.isdir(outdir):
     exit()
 # Make directory for tokenized files
 try:
-    os.mkdir(outdir + "/fileCounts")
+    os.mkdir("{}/fileCounts".format(outdir))
 except FileExistsError:
     pass
 except Exception as e:
-    print("Error opening file: " + e)
+    print("Error opening file: {}".format(e))
     exit()
 
 # Initialize values
@@ -110,11 +110,11 @@ docHT = HashTable(50000)
 for i in os.listdir(indir):
     # Open current input file and corresponding output file
     try:
-        data = open(indir + "/" + i, 'r', encoding="latin-1").read()
+        data = open("{}/{}".format(indir, i), 'r', encoding="latin-1").read()
         lexer.input(data)
-        outputFile = open(outdir + "/fileCounts/" + i + ".txt", 'w')
+        outputFile = open("{}/fileCounts/{}.txt".format(outdir, i), 'w')
     except Exception as e:
-        print("Error opening file " + i + ": " + str(e))
+        print("Error opening file {}: {}".format(), i, str(e))
         continue
     
     # Read tokens, add them to document hashTable, and increment counts
@@ -131,4 +131,4 @@ for i in os.listdir(indir):
     docHT.reset()
 
 # Write total token count to stdout
-open(outdir + "/total.txt", 'w').write("\nTotal tokens: {:n}".format(totalTokens))
+open("{}/total.txt".format(outdir), 'w').write("\nTotal tokens: {:n}".format(totalTokens))
