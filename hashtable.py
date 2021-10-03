@@ -118,19 +118,19 @@ class GlobalHashTable(HashTable):
                 nextslot=self.rehash(hashvalue) # index collision, using linear probing to find the location
                 if self.slots[nextslot] == None:
                     self.slots[nextslot] = key
-                    self.data[hashvalue] = self.Entry(data)
+                    self.data[nextslot] = self.Entry(data)
                     self.uniqueTokens += 1
                 elif self.slots[nextslot] == key:
-                    self.data[hashvalue].numDocs += 1
-                    self.data[hashvalue].files.append(data)
+                    self.data[nextslot].numDocs += 1
+                    self.data[nextslot].files.append(data)
                 else:
                     while self.slots[nextslot] != None and self.slots[nextslot] != key:
                         nextslot=self.rehash(nextslot)
                         if self.slots[nextslot] == None:
                             self.slots[nextslot] = key
-                            self.data[hashvalue] = self.Entry(data)
+                            self.data[nextslot] = self.Entry(data)
                             self.uniqueTokens += 1
 
                         elif self.slots[nextslot] == key:
-                            self.data[hashvalue].numDocs += 1
-                            self.data[hashvalue].files.append(data)
+                            self.data[nextslot].numDocs += 1
+                            self.data[nextslot].files.append(data)
