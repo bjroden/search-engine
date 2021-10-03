@@ -2,7 +2,7 @@
 # Author: Brian Roden
 # Program to parse html files for tokens
 
-from hashtable import HashTable
+import hashtable
 import ply.lex as lex
 import sys
 import re
@@ -94,25 +94,20 @@ if not os.path.isdir(indir):
 if not os.path.isdir(outdir):
     print("Error: invalid output path")
     exit()
-# Make directory for tokenized files
-try:
-    os.mkdir("{}/fileCounts".format(outdir))
-except FileExistsError:
-    pass
-except Exception as e:
-    print("Error opening file: {}".format(e))
-    exit()
 
 # Initialize values
 totalTokens = 0 
-docHT = HashTable(50000)
+docID = 0
+DOC_HT_SIZE = 50000
+GLOB_HT_SIZE = 50000
+docHT = hashtable.HashTable(DOC_HT_SIZE)
+globHT = hashtable.GlobalHashTable(GLOB_HT_SIZE)
 # Tokenize every file in indir
 for i in os.listdir(indir):
     # Open current input file and corresponding output file
     try:
         data = open("{}/{}".format(indir, i), 'r', encoding="latin-1").read()
         lexer.input(data)
-        outputFile = open("{}/fileCounts/{}.txt".format(outdir, i), 'w')
     except Exception as e:
         print("Error opening file {}: {}".format(), i, str(e))
         continue
@@ -126,9 +121,12 @@ for i in os.listdir(indir):
         docHT.insert(tok.value, 1)
         docTokens += 1
     totalTokens += docTokens
-    # Write number of unique and total tokens to file, reset document hashtable to 0s
-    outputFile.write("File: {}\nUnique: {:n}\nTotal: {:n}".format(i, docHT.uniqueTokens, docTokens))
+    # Write doc HT to global HT, reset docHT
+    for j in range(DOC_HT_SIZE):
+       if docHT.slots[j] is not None and docHT.data[j] != 0:
+           globHT.insert(docHT.slots[j], (docID, docHT.data[j]))
     docHT.reset()
+    docID += 1
 
 # Write total token count to stdout
 open("{}/total.txt".format(outdir), 'w').write("\nTotal tokens: {:n}".format(totalTokens))
