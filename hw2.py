@@ -94,6 +94,13 @@ if not os.path.isdir(indir):
 if not os.path.isdir(outdir):
     print("Error: invalid output path")
     exit()
+try:
+    dictFile = open("{}/dict".format(outdir), 'w')
+    postFile = open("{}/post".format(outdir), 'w')
+    mapFile = open("{}/map".format(outdir), 'w')
+except Exception as e:
+    print("Error opening output files: {}", str(e))
+    exit()
 
 # Initialize values
 totalTokens = 0 
@@ -126,7 +133,18 @@ for i in os.listdir(indir):
        if docHT.slots[j] is not None and docHT.data[j] != 0:
            globHT.insert(docHT.slots[j], (docID, docHT.data[j]))
     docHT.reset()
+    mapFile.write("{}\n".format(i))
     docID += 1
+
+postLineNo = 0
+for i in range(GLOB_HT_SIZE):
+    if globHT.slots[i] is not None and globHT.data[i] is not None:
+        dictFile.write("{}:{:n}:{:n}\n".format(globHT.slots[i], globHT.data[i].numDocs, postLineNo))
+        for j in globHT.data[i].files:
+            postFile.write("{:n}:{:n}\n".format(j[0], j[1]))
+            postLineNo += 1
+    else:
+        dictFile.write("NULL:-1:-1\n")
 
 # Write total token count to stdout
 open("{}/total.txt".format(outdir), 'w').write("\nTotal tokens: {:n}".format(totalTokens))
