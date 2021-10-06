@@ -18,7 +18,7 @@ class HashTable:
     
     def hashfunction(self,key): # hash function to find the location
         h = hashlib.sha1() # any other algorithm found in hashlib.algorithms_guaranteed can be used here
-        h.update(bytes(key, encoding="ascii"))
+        h.update(bytes(key, encoding="latin-1"))
         return int(h.hexdigest(), 16)%self.size
 
     def rehash(self, oldhash): # called when index collision happens, using linear probing

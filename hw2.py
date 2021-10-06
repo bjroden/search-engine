@@ -106,12 +106,12 @@ except Exception as e:
 totalTokens = 0 
 docID = 0
 DOC_HT_SIZE = 50000
-GLOB_HT_SIZE = 50000
+GLOB_HT_SIZE = 350000
 docHT = hashtable.HashTable(DOC_HT_SIZE)
 globHT = hashtable.GlobalHashTable(GLOB_HT_SIZE)
 # Tokenize every file in indir
 for i in os.listdir(indir):
-    # Open current input file and corresponding output file
+    # Open current input file
     try:
         data = open("{}/{}".format(indir, i), 'r', encoding="latin-1").read()
         lexer.input(data)
@@ -119,16 +119,14 @@ for i in os.listdir(indir):
         print("Error opening file {}: {}".format(), i, str(e))
         continue
     
-    # Read tokens, add them to document hashTable, and increment counts
+    # Read tokens and add them to document hashTable
     docTokens = 0
     while True:
         tok = lexer.token()
         if not tok:
             break
         docHT.insert(tok.value, 1)
-        docTokens += 1
-    totalTokens += docTokens
-    # Write doc HT to global HT, reset docHT
+    # Write doc HT to global HT, reset docHT, and write filename to map file
     for j in range(DOC_HT_SIZE):
        if docHT.slots[j] is not None and docHT.data[j] != 0:
            globHT.insert(docHT.slots[j], (docID, docHT.data[j]))
@@ -136,6 +134,7 @@ for i in os.listdir(indir):
     mapFile.write("{}\n".format(i))
     docID += 1
 
+# Write all entries to the dict and hash files
 postLineNo = 0
 for i in range(GLOB_HT_SIZE):
     if globHT.slots[i] is not None and globHT.data[i] is not None:
@@ -145,6 +144,3 @@ for i in range(GLOB_HT_SIZE):
             postLineNo += 1
     else:
         dictFile.write("NULL:-1:-1\n")
-
-# Write total token count to stdout
-open("{}/total.txt".format(outdir), 'w').write("\nTotal tokens: {:n}".format(totalTokens))
