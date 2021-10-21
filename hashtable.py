@@ -4,6 +4,7 @@
 # September 22, 2018
 import hashlib
 from collections import deque
+from dataclasses import dataclass
 
 class HashTable:
     def __init__(self, table_size):
@@ -93,6 +94,13 @@ class HashTable:
 
     def __len__(self):
         return self.size
+
+
+@dataclass
+class PostRecord:
+    docID: int
+    tf: float
+
 
 # Regular hashtable, except values are numDocs + Linked List pairs instead of frequency counts. Used for tracking all doc frequencies
 class GlobalHashTable(HashTable):
