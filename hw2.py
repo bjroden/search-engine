@@ -7,6 +7,7 @@ import ply.lex as lex
 import sys
 import re
 import os
+import math
 from collections import Counter
 
 # List of token types
@@ -129,18 +130,22 @@ for i in os.listdir(indir):
     # Write doc HT to global HT, reset docHT, and write filename to map file
     for j in range(DOC_HT_SIZE):
        if docHT.slots[j] is not None and docHT.data[j] != 0:
-           globHT.insert(docHT.slots[j], (docID, docHT.data[j]))
+           rtf = docHT.data[j] / docHT.totalTokens
+           globHT.insert(docHT.slots[j], (docID, rtf))
     docHT.reset()
     mapFile.write("{}\n".format(i))
     docID += 1
 
 # Write all entries to the dict and hash files
 postLineNo = 0
+totalDocs = docID + 1
 for i in range(GLOB_HT_SIZE):
     if globHT.slots[i] is not None and globHT.data[i] is not None:
         dictFile.write("{}:{:n}:{:n}\n".format(globHT.slots[i], globHT.data[i].numDocs, postLineNo))
+        idf = 1 + math.log(totalDocs / globHT.data[i].numDocs)
         for j in globHT.data[i].files:
-            postFile.write("{:n}:{:n}\n".format(j[0], j[1]))
+            tf = j[1]
+            postFile.write("{:n}:{:n}\n".format(j[0], int(tf * idf * 100000000)))
             postLineNo += 1
     else:
         dictFile.write("NULL:-1:-1\n")

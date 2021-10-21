@@ -9,11 +9,13 @@ class HashTable:
     def __init__(self, table_size):
         self.size=table_size # size of hash table
         self.uniqueTokens=0
+        self.totalTokens=0
         self.slots=[None]*self.size # initialize keys
         self.data=[None]*self.size # initialize values
     
     def reset(self): # reset keys without creating new HT
         self.uniqueTokens=0
+        self.totalTokens=0
         self.slots=[None]*self.size # initialize keys
     
     def hashfunction(self,key): # hash function to find the location
@@ -51,6 +53,7 @@ class HashTable:
 
                         elif self.slots[nextslot] == key:
                             self.data[nextslot] += 1
+        self.totalTokens+=1
 
     def get(self, key):  # get the value by looking for the key
         startslot = self.hashfunction(key)
