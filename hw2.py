@@ -134,7 +134,8 @@ for i in os.listdir(indir):
         tok = lexer.token()
         if not tok:
             break
-        docHT.insert(tok.value, 1)
+        if len(tok.value) > 1:
+            docHT.insert(tok.value, 1)
     # Write doc HT to global HT, reset docHT, and write filename to map file
     for j in range(DOC_HT_SIZE):
         term = docHT.slots[j]
