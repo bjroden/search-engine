@@ -103,11 +103,19 @@ except Exception as e:
     print("Error opening output files: {}", str(e))
     exit()
 
+# Constants
+DOC_HT_SIZE = 50000
+GLOB_HT_SIZE = 350000
+TERM_LENGTH = 16
+NUMDOCS_LENGTH = 4
+START_LENGTH = 12
+DOCID_LENGTH = 3
+WEIGHT_LENGTH = 9
+MAPNAME_LENGTH = 13
+
 # Initialize values
 totalTokens = 0 
 docID = 0
-DOC_HT_SIZE = 50000
-GLOB_HT_SIZE = 350000
 docHT = hashtable.HashTable(DOC_HT_SIZE)
 globHT = hashtable.GlobalHashTable(GLOB_HT_SIZE)
 # Tokenize every file in indir
@@ -135,21 +143,33 @@ for i in os.listdir(indir):
            rtf = freq / docHT.totalTokens
            globHT.insert(term, hashtable.PostRecord(docID, rtf))
     docHT.reset()
-    mapFile.write("{}\n".format(i))
+    mapFile.write("{}\n".format(i.ljust(MAPNAME_LENGTH)))
     docID += 1
 
-# Write all entries to the dict and hash files
+# Write all entries to the dict and post files
 postLineNo = 0
 totalDocs = docID + 1
 for i in range(GLOB_HT_SIZE):
     term = globHT.slots[i]
     bucket = globHT.data[i]
     if term is not None and bucket is not None:
-        dictFile.write("{}:{:n}:{:n}\n".format(term, bucket.numDocs, postLineNo))
+        # Create fixed-length strings and write to dict
+        termString = str(term).ljust(TERM_LENGTH)[:TERM_LENGTH]
+        numDocsString = str(bucket.numDocs).ljust(NUMDOCS_LENGTH)[:NUMDOCS_LENGTH]
+        postLineNoString = str(postLineNo).ljust(START_LENGTH)[:START_LENGTH]
+        dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
+
+        # Write fixed-length docID and term weights to post file
         idf = 1 + math.log(totalDocs / bucket.numDocs)
         for docOccurrence in bucket.files:
             tf = docOccurrence.tf
-            postFile.write("{:n}:{:n}\n".format(docOccurrence.docID, int(tf * idf * 100000000)))
+            docIDString = str(docOccurrence.docID).ljust(DOCID_LENGTH)[:DOCID_LENGTH]
+            weightString = str(int(tf * idf * 100000000)).ljust(WEIGHT_LENGTH)[:WEIGHT_LENGTH]
+            postFile.write("{} {}\n".format(docIDString, weightString))
             postLineNo += 1
+    # Fixed-length null bucket for dict file
     else:
-        dictFile.write("NULL:-1:-1\n")
+        termString = "NULL".ljust(TERM_LENGTH)[:TERM_LENGTH]
+        numDocsString = str("-1").ljust(NUMDOCS_LENGTH)[:NUMDOCS_LENGTH]
+        postLineNoString = str("-1").ljust(START_LENGTH)[:START_LENGTH]
+        dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
