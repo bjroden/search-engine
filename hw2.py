@@ -106,6 +106,7 @@ except Exception as e:
 # Constants
 DOC_HT_SIZE = 50000
 GLOB_HT_SIZE = 350000
+STOP_HT_SIZE = 3000
 TERM_LENGTH = 16
 NUMDOCS_LENGTH = 4
 START_LENGTH = 12
@@ -118,6 +119,20 @@ totalTokens = 0
 docID = 0
 docHT = hashtable.HashTable(DOC_HT_SIZE)
 globHT = hashtable.GlobalHashTable(GLOB_HT_SIZE)
+# Create stopword hashtable
+try:
+    stopFile = open("stopwords").read()
+    lexer.input(stopFile)
+except Exception as e:
+    print("Error opening stopfile: {}".format(str(e)))
+    exit()
+stopHT = hashtable.HashTable(STOP_HT_SIZE)
+while True:
+    tok = lexer.token()
+    if not tok:
+        break
+    if len(tok.value) > 1:
+        stopHT.insert(tok.value, 1)
 # Tokenize every file in indir
 for i in os.listdir(indir):
     # Open current input file
@@ -134,7 +149,7 @@ for i in os.listdir(indir):
         tok = lexer.token()
         if not tok:
             break
-        if len(tok.value) > 1:
+        if len(tok.value) > 1 and not stopHT.intable(tok.value):
             docHT.insert(tok.value, 1)
     # Write doc HT to global HT, reset docHT, and write filename to map file
     for j in range(DOC_HT_SIZE):
