@@ -8,7 +8,7 @@ import sys
 import re
 import os
 import math
-from collections import Counter
+from collections import Counter, namedtuple
 
 # List of token types
 tokens = (
@@ -114,6 +114,9 @@ DOCID_LENGTH = 3
 WEIGHT_LENGTH = 9
 MAPNAME_LENGTH = 13
 
+# Format that global hashtable records are entered in
+PostRecord = namedtuple('PostRecord', 'docID tf')
+
 # Initialize values
 totalTokens = 0 
 docID = 0
@@ -157,7 +160,7 @@ for i in os.listdir(indir):
         freq = docHT.data[j]
         if term is not None and freq != 0:
            rtf = freq / docHT.totalTokens
-           globHT.insert(term, hashtable.PostRecord(docID, rtf))
+           globHT.insert(term, PostRecord(docID, rtf))
     docHT.reset()
     mapFile.write("{}\n".format(i.ljust(MAPNAME_LENGTH)))
     docID += 1
