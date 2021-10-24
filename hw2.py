@@ -83,6 +83,10 @@ t_ignore  = ' []+$|=%*{}/0-"#>();:!?.,\t\xa0\x85\xe2\x00'
 def t_error(t):
     t.lexer.skip(1)
 
+# Returns string of numchars length, truncated if len(string) > numchars, or padded with spaces if len(string) < numchars
+def fixLength(string, numchars):
+    return string.ljust(numchars)[:numchars]
+
 # Create the parser
 lexer = lex.lex()
 
@@ -173,22 +177,22 @@ for i in range(GLOB_HT_SIZE):
     bucket = globHT.data[i]
     if term is not None and bucket is not None:
         # Create fixed-length strings and write to dict
-        termString = str(term).ljust(TERM_LENGTH)[:TERM_LENGTH]
-        numDocsString = str(bucket.numDocs).ljust(NUMDOCS_LENGTH)[:NUMDOCS_LENGTH]
-        postLineNoString = str(postLineNo).ljust(START_LENGTH)[:START_LENGTH]
+        termString = fixLength(str(term), TERM_LENGTH)
+        numDocsString = fixLength(str(bucket.numDocs), NUMDOCS_LENGTH)
+        postLineNoString = fixLength(str(postLineNo), START_LENGTH)
         dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
 
         # Write fixed-length docID and term weights to post file
         idf = 1 + math.log(totalDocs / bucket.numDocs)
         for docOccurrence in bucket.files:
             tf = docOccurrence.tf
-            docIDString = str(docOccurrence.docID).ljust(DOCID_LENGTH)[:DOCID_LENGTH]
-            weightString = str(int(tf * idf * 100000000)).ljust(WEIGHT_LENGTH)[:WEIGHT_LENGTH]
+            docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
+            weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
             postFile.write("{} {}\n".format(docIDString, weightString))
             postLineNo += 1
     # Fixed-length null bucket for dict file
     else:
-        termString = "NULL".ljust(TERM_LENGTH)[:TERM_LENGTH]
-        numDocsString = str("-1").ljust(NUMDOCS_LENGTH)[:NUMDOCS_LENGTH]
-        postLineNoString = str("-1").ljust(START_LENGTH)[:START_LENGTH]
+        termString = fixLength("NULL", TERM_LENGTH)
+        numDocsString = fixLength(str("-1"), NUMDOCS_LENGTH)
+        postLineNoString = fixLength(str("-1"), START_LENGTH)
         dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
