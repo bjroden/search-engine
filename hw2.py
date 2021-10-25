@@ -185,7 +185,7 @@ for i in range(GLOB_HT_SIZE):
         dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
 
         # Write fixed-length docID and term weights to post file
-        idf = 1 + math.log(totalDocs / bucket.numDocs)
+        idf = 1 + math.log(totalDocs / bucket.numDocs, 10)
         for docOccurrence in bucket.files:
             tf = docOccurrence.tf
             docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
