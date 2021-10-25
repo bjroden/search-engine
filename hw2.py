@@ -1,6 +1,6 @@
-# Information Retrieval Homework 1
+# Information Retrieval Homework 3
 # Author: Brian Roden
-# Program to parse html files for tokens
+# Program to parse html files for tokens and write them to inverted files
 
 import hashtable
 import ply.lex as lex
@@ -28,14 +28,14 @@ def t_CSS(T):
     r'([\S^,]*,\s*)*\S+\s*{[^}]+}'
 
 # HTML Elements take the forms <! **** COMMENT / DOCTYPE ****>, or <WORD attribute1=value attribute2=value>, or </WORD>
-# Regex first checks for a "<", then first checks if there is a "!" character, in which case it will read until the next ">", since these are either comments or DOCTYPE declarations.
-# If no "!", it will look for "<" followed by an optional "/", followd by WORD, followed by any amount of "attribute=value", followed by optional whitespace, then ">"
+# Regex first checks for a "<", then checks if there is a "!" character, in which case it will read until the next ">", since these are either comments or DOCTYPE declarations.
+# If no "!", it will look for "<" followed by an optional "/", followd by WORD, followed by any amount of "attribute=value", followed by optional whitespace and optional an "/", then ">"
 # No return statement because these are not useful for indexing
 def t_HTMLTAG(t):
     r'<(![^>]+|\/?\w+((\s*[^\s=>])+=(\s*[^\s=>])+)*\s*\/?)>'
 
 # Regex checks for hyperlinks, which are words starting with http://, https://, or www., and any number of non-whitespace, html tags, or "/" is found (since including the specific subdirectory of the site is not useful for indexing)
-# The starting elements are then scrubbed out
+# The starting elements are then removed
 def t_HYPERLINK(t):
     r'(htt(p|ps):\/\/|www.)[^\s<\/]+'
     t.value = t.value.lower()
@@ -61,10 +61,10 @@ def t_NUMBER(t):
 def t_HTML_ENTITY(t):
     r'\&\w+'
 
-# Words are similar to typical IDs, exxcept with special inclusions for allowing specific punctuation so tokens don't become improperly split.
-# These start with a A-z character, and can be followed by more characters, digits, hyphens, apostrophes, html tags, and periods for abbreviations like "PH.D"
-# These additions are included since "we'll" won't become "we" and "ll" separately, nor "<b>E</b>lephants" becoming "e" and "lephants". These are then removed with the re.sub expression to make for better indexing
-# Other punctuation marks, like ?, !, etc. are not typically connecting words together, so these are not included
+# Words are similar to typical IDs, except with special inclusions for allowing specific punctuation so tokens don't become improperly split.
+# These start with an A-z character, and can be followed by more characters, digits, hyphens, apostrophes, html tags, and periods for abbreviations like "PH.D"
+# These additions are included so that "we'll" won't become "we" and "ll" separately, nor "<b>E</b>lephants" becoming "e" and "lephants". These are then removed with the re.sub expression to make for better indexing
+# Other punctuation marks, like ?, !, etc. don't typically connect words together, so these are not included
 def t_WORD(t):
     r'[A-z](\w|\'|-|\.\w|<[^>]+>)*'
     t.value = t.value.lower()
@@ -135,11 +135,13 @@ except Exception as e:
     exit()
 stopHT = hashtable.HashTable(STOP_HT_SIZE)
 while True:
+    # Get every token in the "stopwords" file and add them to the stopword hashtable
     tok = lexer.token()
     if not tok:
         break
     if len(tok.value) > 1:
         stopHT.insert(tok.value, 1)
+
 # Tokenize every file in indir
 for i in os.listdir(indir):
     # Open current input file
