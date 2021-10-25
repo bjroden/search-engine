@@ -120,6 +120,7 @@ MAPNAME_LENGTH = 13
 
 # Format that global hashtable records are entered in
 PostRecord = namedtuple('PostRecord', 'docID tf')
+EntryRecord = namedtuple('EntryRecord', 'totalFreq, postrecord')
 
 # Initialize values
 totalTokens = 0 
@@ -166,7 +167,7 @@ for i in os.listdir(indir):
         freq = docHT.data[j]
         if term is not None and freq != 0:
            rtf = freq / docHT.totalTokens
-           globHT.insert(term, PostRecord(docID, rtf))
+           globHT.insert(term, EntryRecord(freq, PostRecord(docID, rtf)))
     docHT.reset()
     mapFile.write("{}\n".format(i.ljust(MAPNAME_LENGTH)))
     docID += 1
@@ -178,23 +179,30 @@ for i in range(GLOB_HT_SIZE):
     term = globHT.slots[i]
     bucket = globHT.data[i]
     if term is not None and bucket is not None:
-        # Create fixed-length strings and write to dict
-        termString = fixLength(str(term), TERM_LENGTH)
-        numDocsString = fixLength(str(bucket.numDocs), NUMDOCS_LENGTH)
-        postLineNoString = fixLength(str(postLineNo), START_LENGTH)
-        dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
+        if bucket.numDocs == 1 and bucket.totalFreq == 1:
+            termString = fixLength("!DELETED", TERM_LENGTH)
+            numDocsString = fixLength(str("-1"), NUMDOCS_LENGTH)
+            postLineNoString = fixLength(str("-1"), START_LENGTH)
+            dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
 
-        # Write fixed-length docID and term weights to post file
-        idf = 1 + math.log(totalDocs / bucket.numDocs, 10)
-        for docOccurrence in bucket.files:
-            tf = docOccurrence.tf
-            docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
-            weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
-            postFile.write("{} {}\n".format(docIDString, weightString))
-            postLineNo += 1
+        else:
+            # Create fixed-length strings and write to dict
+            termString = fixLength(str(term), TERM_LENGTH)
+            numDocsString = fixLength(str(bucket.numDocs), NUMDOCS_LENGTH)
+            postLineNoString = fixLength(str(postLineNo), START_LENGTH)
+            dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
+
+            # Write fixed-length docID and term weights to post file
+            idf = 1 + math.log(totalDocs / bucket.numDocs, 10)
+            for docOccurrence in bucket.files:
+                tf = docOccurrence.tf
+                docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
+                weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
+                postFile.write("{} {}\n".format(docIDString, weightString))
+                postLineNo += 1
     # Fixed-length null bucket for dict file
     else:
-        termString = fixLength("NULL", TERM_LENGTH)
+        termString = fixLength("!NULL", TERM_LENGTH)
         numDocsString = fixLength(str("-1"), NUMDOCS_LENGTH)
         postLineNoString = fixLength(str("-1"), START_LENGTH)
         dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))

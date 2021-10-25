@@ -100,8 +100,14 @@ class GlobalHashTable(HashTable):
     class Entry:
         def __init__(self, data):
             self.numDocs = 1
+            self.totalFreq = data.totalFreq
             self.files = deque()
-            self.files.append(data)
+            self.files.append(data.postrecord)
+        
+        def insert(self, data):
+            self.numDocs += 1
+            self.totalFreq += data.totalFreq
+            self.files.append(data.postrecord)
 
     def __init__(self, table_size):
         HashTable.__init__(self, table_size)
@@ -115,8 +121,7 @@ class GlobalHashTable(HashTable):
             self.uniqueTokens += 1
         else:
             if self.slots[hashvalue] == key:  # key already exists, update the value
-                self.data[hashvalue].numDocs += 1
-                self.data[hashvalue].files.append(data)
+                self.data[hashvalue].insert(data)
             else:
                 nextslot=self.rehash(hashvalue) # index collision, using linear probing to find the location
                 if self.slots[nextslot] == None:
@@ -124,8 +129,7 @@ class GlobalHashTable(HashTable):
                     self.data[nextslot] = self.Entry(data)
                     self.uniqueTokens += 1
                 elif self.slots[nextslot] == key:
-                    self.data[nextslot].numDocs += 1
-                    self.data[nextslot].files.append(data)
+                    self.data[hashvalue].insert(data)
                 else:
                     while self.slots[nextslot] != None and self.slots[nextslot] != key:
                         nextslot=self.rehash(nextslot)
@@ -135,5 +139,4 @@ class GlobalHashTable(HashTable):
                             self.uniqueTokens += 1
 
                         elif self.slots[nextslot] == key:
-                            self.data[nextslot].numDocs += 1
-                            self.data[nextslot].files.append(data)
+                            self.data[hashvalue].insert(data)
