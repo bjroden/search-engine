@@ -174,7 +174,7 @@ for i in os.listdir(indir):
 
 # Write all entries to the dict and post files
 postLineNo = 0
-totalDocs = docID + 1
+totalDocs = docID
 for i in range(GLOB_HT_SIZE):
     term = globHT.slots[i]
     bucket = globHT.data[i]
