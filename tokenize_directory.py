@@ -2,21 +2,11 @@
 
 import hashtable
 from parser import tokenize
+from constants import *
 import sys
 import os
 import math
 from collections import Counter, namedtuple
-
-# Constants
-DOC_HT_SIZE = 50000
-GLOB_HT_SIZE = 350000
-STOP_HT_SIZE = 3000
-TERM_LENGTH = 16
-NUMDOCS_LENGTH = 4
-START_LENGTH = 12
-DOCID_LENGTH = 3
-WEIGHT_LENGTH = 9
-MAPNAME_LENGTH = 13
 
 # Returns string of numchars length, truncated if len(string) > numchars, or padded with spaces if len(string) < numchars
 def fixLength(string, numchars):
