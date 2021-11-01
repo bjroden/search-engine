@@ -85,5 +85,6 @@ def tokenize(data):
         tok = lexer.token()
         if not tok:
             break
-        tokens += [tok.value]
+        string = re.sub('[^\x00-\x7f]', r'', tok.value)
+        tokens += [string]
     return tokens
