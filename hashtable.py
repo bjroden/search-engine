@@ -34,7 +34,7 @@ class HashTable:
             self.uniqueTokens += 1
         else:
             if self.slots[hashvalue] == key:  # key already exists, update the value
-                self.data[hashvalue] += 1
+                self.data[hashvalue] += data
             else:
                 nextslot=self.rehash(hashvalue) # index collision, using linear probing to find the location
                 if self.slots[nextslot] == None:
@@ -42,7 +42,7 @@ class HashTable:
                     self.data[nextslot] = data
                     self.uniqueTokens += 1
                 elif self.slots[nextslot] == key:
-                    self.data[nextslot] += 1
+                    self.data[nextslot] += data
                 else:
                     while self.slots[nextslot] != None and self.slots[nextslot] != key:
                         nextslot=self.rehash(nextslot)
@@ -52,7 +52,7 @@ class HashTable:
                             self.uniqueTokens += 1
 
                         elif self.slots[nextslot] == key:
-                            self.data[nextslot] += 1
+                            self.data[nextslot] += data
         self.totalTokens+=1
 
     def get(self, key):  # get the value by looking for the key
