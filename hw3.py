@@ -87,8 +87,17 @@ def t_error(t):
 def fixLength(string, numchars):
     return string.ljust(numchars)[:numchars]
 
-# Create the parser
-lexer = lex.lex()
+# Given input text, return a list of tokens
+def tokenize(data):
+    lexer = lex.lex()
+    lexer.input(data)
+    tokens = []
+    while True:
+        tok = lexer.token()
+        if not tok:
+            break
+        tokens += [tok.value]
+    return tokens
 
 # Open file directories
 indir = os.path.abspath(sys.argv[1])
@@ -130,37 +139,29 @@ globHT = hashtable.GlobalHashTable(GLOB_HT_SIZE)
 # Create stopword hashtable
 try:
     stopFile = open("stopwords").read()
-    lexer.input(stopFile)
 except Exception as e:
     print("Error opening stopfile: {}".format(str(e)))
     exit()
 stopHT = hashtable.HashTable(STOP_HT_SIZE)
-while True:
+for t in tokenize(stopFile):
     # Get every token in the "stopwords" file and add them to the stopword hashtable
-    tok = lexer.token()
-    if not tok:
-        break
-    if len(tok.value) > 1:
-        stopHT.insert(tok.value, 1)
+    if len(t) > 1:
+        stopHT.insert(t, 1)
 
 # Tokenize every file in indir
 for i in os.listdir(indir):
     # Open current input file
     try:
         data = open("{}/{}".format(indir, i), 'r', encoding="latin-1").read()
-        lexer.input(data)
     except Exception as e:
         print("Error opening file {}: {}".format(), i, str(e))
         continue
     
     # Read tokens and add them to document hashTable
     docTokens = 0
-    while True:
-        tok = lexer.token()
-        if not tok:
-            break
-        if len(tok.value) > 1 and not stopHT.intable(tok.value):
-            docHT.insert(tok.value, 1)
+    for t in tokenize(data):
+        if len(t) > 1 and not stopHT.intable(t):
+            docHT.insert(t, 1)
     # Write doc HT to global HT, reset docHT, and write filename to map file
     for j in range(DOC_HT_SIZE):
         term = docHT.slots[j]
