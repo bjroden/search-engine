@@ -4,6 +4,7 @@ from parser import tokenize
 from constants import *
 import hashtable
 import heapq
+import argparse
 
 def hashfunction(key): # hash function to find the location
     h = hashlib.sha1() # any other algorithm found in hashlib.algorithms_guaranteed can be used here
@@ -13,14 +14,25 @@ def hashfunction(key): # hash function to find the location
 def rehash(oldhash): # called when index collision happens, using linear probing
     return (oldhash+3) % GLOB_HT_SIZE
 
+# Command line arguments
+parser = argparse.ArgumentParser(description="Given a query and a directory with dict, post, and map files, show which documents are most relevant to the query")
+parser.add_argument('-d', required=True, dest="indir", help="Input directory for dict, post, and map files. Required.")
+parser.add_argument('-q', required=True, nargs='*', dest="query", help="All args following -q will be part of the query. Required.")
+parser.add_argument('-n', type=int, default=10, dest="numResults", help="Show \"numresults\" amount of results for the output")
+args = parser.parse_args()
+
 # Open files
-dictFile = open("output/hw4output/dict", 'r')
-postFile = open("output/hw4output/post", 'r')
-mapFile = open("output/hw4output/map", 'r')
+dictFile = open("{}/dict".format(args.indir), 'r')
+postFile = open("{}/post".format(args.indir), 'r')
+mapFile = open("{}/map".format(args.indir), 'r')
 query = sys.argv[1]
 
-# Get tokens from input and search dict file for each token
-tokens = tokenize(query)
+# Tokenize query terms to match dict file
+tokens = []
+for i in args.query:
+    tokens += tokenize(i)
+
+# Search dict file for each token
 dictRecords = []
 for i in tokens:
     # Read dict record from byte offset
@@ -63,7 +75,7 @@ for i in dictRecords:
 sortedResults = []
 i = 0
 # Add to list until capacity
-while i < queryHT.size and len(sortedResults) < QUERY_RESULTS:
+while i < queryHT.size and len(sortedResults) < args.numResults:
     if queryHT.slots[i] is not None and queryHT.data[i] is not None:
         docID = queryHT.slots[i]
         weight = queryHT.data[i]
@@ -81,10 +93,10 @@ while i < queryHT.size:
     i += 1
     
 # Display results
-if len(sortedResults) < QUERY_RESULTS:
+if len(sortedResults) < args.numResults:
     numResults = len(sortedResults)
 else:
-    numResults = QUERY_RESULTS
+    numResults = args.numResults
 for i in range(numResults, 0, -1):
     result = heapq.heappop(sortedResults)
     weight = result[0]
