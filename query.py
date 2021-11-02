@@ -16,16 +16,19 @@ def rehash(oldhash): # called when index collision happens, using linear probing
 
 # Command line arguments
 argumentparser = argparse.ArgumentParser(description="Given a query and a directory with dict, post, and map files, show which documents are most relevant to the query")
-argumentparser.add_argument('-d', required=True, dest="indir", help="Input directory for dict, post, and map files. Required.")
-argumentparser.add_argument('-q', required=True, nargs='*', dest="query", help="All args following -q will be part of the query. Required.")
-argumentparser.add_argument('-n', type=int, default=10, dest="numResults", help="Show \"numresults\" amount of results for the output")
+argumentparser.add_argument('query', nargs='*', help="All args following the query command will be part of the query.")
+argumentparser.add_argument('-d', default="output/hw4output", dest="indir", help="Input directory for dict, post, and map files. Default is output/hw4output.")
+argumentparser.add_argument('-n', type=int, default=10, dest="numResults", help="Show \"numresults\" amount of results for the output. Default is 10.")
 args = argumentparser.parse_args()
 
 # Open files
-dictFile = open("{}/dict".format(args.indir), 'r')
-postFile = open("{}/post".format(args.indir), 'r')
-mapFile = open("{}/map".format(args.indir), 'r')
-query = sys.argv[1]
+try:
+    dictFile = open("{}/dict".format(args.indir), 'r')
+    postFile = open("{}/post".format(args.indir), 'r')
+    mapFile = open("{}/map".format(args.indir), 'r')
+except Exception as e:
+    print("Inverted files not found: {}".format(str(e)))
+    exit()
 
 # Tokenize query terms to match dict file
 tokens = []
@@ -71,7 +74,7 @@ for i in dictRecords:
         queryHT.insert(postrecord[0], int(postrecord[1]))
         postFile.read(1)
 
-# Sort results with a minheap of size QUERY_RESULTS
+# Sort results with a minheap where max size = numResults
 sortedResults = []
 i = 0
 # Add to list until capacity
