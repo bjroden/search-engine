@@ -81,7 +81,11 @@ while i < queryHT.size:
     i += 1
     
 # Display results
-for i in range(QUERY_RESULTS, 0, -1):
+if len(sortedResults) < QUERY_RESULTS:
+    numResults = len(sortedResults)
+else:
+    numResults = QUERY_RESULTS
+for i in range(numResults, 0, -1):
     result = heapq.heappop(sortedResults)
     weight = result[0]
     docID = int(result[1])
