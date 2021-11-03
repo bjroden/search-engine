@@ -2,6 +2,7 @@
 
 import ply.lex as lex
 import re
+from constants import *
 
 # List of token types
 tokens = (
@@ -86,5 +87,5 @@ def tokenize(data):
         if not tok:
             break
         string = re.sub('[^\x00-\x7f]', r'', tok.value)
-        tokens += [string]
+        tokens += [string[:TERM_LENGTH]]
     return tokens
