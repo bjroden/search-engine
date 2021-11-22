@@ -53,7 +53,7 @@ for i in tokens:
 
 # Exit early if no results found
 if len(dictRecords) < 1:
-    print("No matches found")
+    print("<tr><td>No matches found</tr></td>")
     exit()
 
 # Create hashtable for doc weights, with size = 3 * sum(all numdocs values for each dict record) for more efficient memory usage
@@ -100,10 +100,13 @@ if len(sortedResults) < args.numResults:
     numResults = len(sortedResults)
 else:
     numResults = args.numResults
+resultStrings = []
 for i in range(numResults, 0, -1):
     result = heapq.heappop(sortedResults)
     weight = result[0]
     docID = int(result[1])
     mapFile.seek(docID * MAP_FILE_SIZE) 
     mapName = mapFile.read(MAP_FILE_SIZE - 1)
-    print("{}: {} (weight {})".format(i, mapName, weight))
+    resultStrings += ["<tr><td>{}:</td> <td><a id='resultlink' href='files/{}'>{}</a></td></tr>".format(i, mapName, mapName, weight)]
+for i in resultStrings[::-1]:
+    print(i)
