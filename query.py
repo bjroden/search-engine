@@ -107,6 +107,6 @@ for i in range(numResults, 0, -1):
     docID = int(result[1])
     mapFile.seek(docID * MAP_FILE_SIZE) 
     mapName = mapFile.read(MAP_FILE_SIZE - 1)
-    resultStrings += ["<tr><td>{}:</td> <td><a id='resultlink' href='files/{}'>{}</a></td></tr>".format(i, mapName, mapName, weight)]
+    resultStrings += ["<tr><td>{}:</td> <td><a id='resultlink' href='files/{}'>{}</a></td> <td>(weight: {})</td></tr>".format(i, mapName, mapName, weight)]
 for i in resultStrings[::-1]:
     print(i)
