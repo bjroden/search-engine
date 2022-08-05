@@ -82,10 +82,7 @@ def tokenize(data):
     lexer = lex.lex()
     lexer.input(data)
     tokens = []
-    while True:
-        tok = lexer.token()
-        if not tok:
-            break
+    while tok := lexer.token():
         string = re.sub('[^\x00-\x7f]', r'', tok.value)
         tokens += [string[:TERM_LENGTH]]
     return tokens
