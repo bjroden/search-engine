@@ -89,16 +89,17 @@ for file in os.listdir(indir):
 postLineNo = 0
 totalDocs = docID
 for term, bucket in zip(globHT.slots, globHT.data):
-    if term is not None and bucket is not None:
-        if bucket.numDocs == 1 and bucket.totalFreq == 1:
-            dictWrite(dictFile, "!DELETED", "-1", "-1")
-        else:
-            # Create fixed-length strings and write to dict
-            dictWrite(dictFile, term, bucket.numDocs, postLineNo)
-            # Write fixed-length docID and term weights to post file
-            idf = 1 + math.log(totalDocs / bucket.numDocs, 10)
-            for docOccurrence in bucket.files:
-                postWrite(postFile, docOccurrence, idf)
-                postLineNo += 1
-    # Fixed-length null bucket for dict file else:
+    if term is None or bucket is None:
+        # Fixed-length null bucket for dict file else:
         dictWrite(dictFile, "!NULL", "-1", "-1")
+    elif bucket.numDocs == 1 and bucket.totalFreq == 1:
+        # Fixed-length deleted bucket for dict file else:
+        dictWrite(dictFile, "!DELETED", "-1", "-1")
+    else:
+        # Create fixed-length strings and write to dict
+        dictWrite(dictFile, term, bucket.numDocs, postLineNo)
+        # Write fixed-length docID and term weights to post file
+        idf = 1 + math.log(totalDocs / bucket.numDocs, 10)
+        for docOccurrence in bucket.files:
+            postWrite(postFile, docOccurrence, idf)
+            postLineNo += 1
