@@ -63,12 +63,12 @@ for t in tokenize(stopFile):
         stopHT.insert(t, 1)
 
 # Tokenize every file in indir
-for i in os.listdir(indir):
+for file in os.listdir(indir):
     # Open current input file
     try:
-        data = open("{}/{}".format(indir, i), 'r', encoding="latin-1").read()
+        data = open("{}/{}".format(indir, file), 'r', encoding="latin-1").read()
     except Exception as e:
-        print("Error opening file {}: {}".format(), i, str(e))
+        print("Error opening file {}: {}".format(), file, str(e))
         continue
     
     # Read tokens and add them to document hashTable
@@ -77,22 +77,18 @@ for i in os.listdir(indir):
         if len(t) > 1 and not stopHT.intable(t):
             docHT.insert(t, 1)
     # Write doc HT to global HT, reset docHT, and write filename to map file
-    for j in range(DOC_HT_SIZE):
-        term = docHT.slots[j]
-        freq = docHT.data[j]
+    for term, freq in zip(docHT.slots, docHT.data):
         if term is not None and freq != 0:
            rtf = freq / docHT.totalTokens
            globHT.insert(term, EntryRecord(freq, PostRecord(docID, rtf)))
     docHT.reset()
-    mapFile.write("{}\n".format(i.ljust(MAPNAME_LENGTH)))
+    mapFile.write("{}\n".format(file.ljust(MAPNAME_LENGTH)))
     docID += 1
 
 # Write all entries to the dict and post files
 postLineNo = 0
 totalDocs = docID
-for i in range(GLOB_HT_SIZE):
-    term = globHT.slots[i]
-    bucket = globHT.data[i]
+for term, bucket in zip(globHT.slots, globHT.data):
     if term is not None and bucket is not None:
         if bucket.numDocs == 1 and bucket.totalFreq == 1:
             dictWrite(dictFile, "!DELETED", "-1", "-1")
@@ -104,6 +100,5 @@ for i in range(GLOB_HT_SIZE):
             for docOccurrence in bucket.files:
                 postWrite(postFile, docOccurrence, idf)
                 postLineNo += 1
-    # Fixed-length null bucket for dict file
-    else:
+    # Fixed-length null bucket for dict file else:
         dictWrite(dictFile, "!NULL", "-1", "-1")
