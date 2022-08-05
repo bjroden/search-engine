@@ -12,6 +12,18 @@ from collections import Counter, namedtuple
 def fixLength(string, numchars):
     return string.ljust(numchars)[:numchars]
 
+def dictWrite(dictFile, term, numDocs, postLineNo):
+    termString = fixLength(str(term), TERM_LENGTH)
+    numDocsString = fixLength(str(numDocs), NUMDOCS_LENGTH)
+    postLineNoString = fixLength(str(postLineNo), START_LENGTH)
+    dictFile.write(f"{termString} {numDocsString} {postLineNoString}\n")
+
+def postWrite(postFile, docOccurrence, idf):
+    tf = docOccurrence.tf
+    docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
+    weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
+    postFile.write(f"{docIDString} {weightString}\n")
+
 # Open file directories
 indir = os.path.abspath(sys.argv[1])
 outdir = os.path.abspath(sys.argv[2])
@@ -83,29 +95,15 @@ for i in range(GLOB_HT_SIZE):
     bucket = globHT.data[i]
     if term is not None and bucket is not None:
         if bucket.numDocs == 1 and bucket.totalFreq == 1:
-            termString = fixLength("!DELETED", TERM_LENGTH)
-            numDocsString = fixLength(str("-1"), NUMDOCS_LENGTH)
-            postLineNoString = fixLength(str("-1"), START_LENGTH)
-            dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
-
+            dictWrite(dictFile, "!DELETED", "-1", "-1")
         else:
             # Create fixed-length strings and write to dict
-            termString = fixLength(str(term), TERM_LENGTH)
-            numDocsString = fixLength(str(bucket.numDocs), NUMDOCS_LENGTH)
-            postLineNoString = fixLength(str(postLineNo), START_LENGTH)
-            dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
-
+            dictWrite(dictFile, term, bucket.numDocs, postLineNo)
             # Write fixed-length docID and term weights to post file
             idf = 1 + math.log(totalDocs / bucket.numDocs, 10)
             for docOccurrence in bucket.files:
-                tf = docOccurrence.tf
-                docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
-                weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
-                postFile.write("{} {}\n".format(docIDString, weightString))
+                postWrite(postFile, docOccurrence, idf)
                 postLineNo += 1
     # Fixed-length null bucket for dict file
     else:
-        termString = fixLength("!NULL", TERM_LENGTH)
-        numDocsString = fixLength(str("-1"), NUMDOCS_LENGTH)
-        postLineNoString = fixLength(str("-1"), START_LENGTH)
-        dictFile.write("{} {} {}\n".format(termString, numDocsString, postLineNoString))
+        dictWrite(dictFile, "!NULL", "-1", "-1")
