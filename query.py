@@ -24,7 +24,7 @@ def getDictRecords(tokens: List[str], dictFile: TextIO) -> List[DictRecord]:
         record = DictRecord(term, int(numDocs), int(postLineStart))
         # Rehash for collisions
         while record.term != i and record.term != "!NULL":
-            hash = rehash(hash)
+            hash = rehash(hash, GLOB_HT_SIZE)
             dictFile.seek(hash * DICT_RECORD_SIZE)
             term, numDocs, postLineStart  = tuple(dictFile.read(DICT_RECORD_SIZE - 1).split()) # -1 for newline character
             record = DictRecord(term, int(numDocs), int(postLineStart))
