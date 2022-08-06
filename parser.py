@@ -1,5 +1,6 @@
 # Tokenization rules for inverted files and queries
 
+from typing import List
 import ply.lex as lex
 import re
 from constants import *
@@ -78,7 +79,7 @@ def t_error(t):
     t.lexer.skip(1)
 
 # Given input text, return a list of tokens
-def tokenize(data):
+def tokenize(data: str) -> List[str]:
     lexer = lex.lex()
     lexer.input(data)
     tokens = []

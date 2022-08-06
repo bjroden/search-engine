@@ -1,42 +1,42 @@
 # Given an input directory and output directory from the command line, tokenize a directory of files and create inverted files
 
-from typing import Tuple
-from hashtable import HashTable, PostRecord, EntryRecord
+from typing import TextIO, Tuple
+from hashtable import HashTable
+from classes import PostRecord, GlobHTEntry
 from parser import tokenize
 from constants import *
 import sys
 import os
 import math
-from collections import Counter, namedtuple
 
 # Returns string of numchars length, truncated if len(string) > numchars, or padded with spaces if len(string) < numchars
-def fixLength(string, numchars):
+def fixLength(string: str, numchars: int) -> str:
     return string.ljust(numchars)[:numchars]
 
-def dictWrite(dictFile, term, numDocs, postLineNo):
+def dictWrite(dictFile: TextIO, term: str, numDocs: int, postLineNo: int):
     termString = fixLength(str(term), TERM_LENGTH)
     numDocsString = fixLength(str(numDocs), NUMDOCS_LENGTH)
     postLineNoString = fixLength(str(postLineNo), START_LENGTH)
     dictFile.write(f"{termString} {numDocsString} {postLineNoString}\n")
 
-def populateStopHT(stopFile) -> HashTable:
-    stopHT = HashTable(STOP_HT_SIZE)
+def populateStopHT(stopFile: TextIO) -> HashTable[int]:
+    stopHT = HashTable[int](STOP_HT_SIZE)
     for token in tokenize(stopFile):
         # Get every token in the "stopwords" file and add them to the stopword hashtable
         if len(token) > 1:
             stopHT.insert(token, 1)
     return stopHT
 
-def postWrite(postFile, docOccurrence, idf):
+def postWrite(postFile: TextIO, docOccurrence: PostRecord, idf: int):
     tf = docOccurrence.rtf
     docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
     weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
     postFile.write(f"{docIDString} {weightString}\n")
 
-def tokenizeFiles(indir, stopHT, mapFile) -> Tuple[int, HashTable]:
+def tokenizeFiles(indir: str, stopHT: HashTable, mapFile: TextIO) -> Tuple[int, HashTable[GlobHTEntry]]:
     currentDocNo = 0
-    docHT = HashTable(DOC_HT_SIZE)
-    globHT = HashTable(GLOB_HT_SIZE)
+    docHT = HashTable[int](DOC_HT_SIZE)
+    globHT = HashTable[GlobHTEntry](GLOB_HT_SIZE)
     # Tokenize every file in indir
     for fileName in os.listdir(indir):
         with open(f"{indir}/{fileName}", 'r', encoding="latin-1") as file:
@@ -49,13 +49,13 @@ def tokenizeFiles(indir, stopHT, mapFile) -> Tuple[int, HashTable]:
             for term, freq in zip(docHT.slots, docHT.data):
                 if term is not None and freq != 0:
                     rtf = freq / docHT.totalTokens
-                    globHT.insert(term, EntryRecord(freq, PostRecord(currentDocNo, rtf)))
+                    globHT.insert(term, GlobHTEntry(freq, PostRecord(currentDocNo, rtf)))
             docHT.reset() 
-            mapFile.write("{}\n".format(fileName.ljust(MAPNAME_LENGTH)))
+            mapFile.write(f"{fixLength(fileName, MAPNAME_LENGTH)}\n")
             currentDocNo += 1
     return (currentDocNo, globHT)
 
-def writeFiles(totalDocs, globHT, dictFile, postFile):
+def writeFiles(totalDocs: int, globHT: HashTable[GlobHTEntry], dictFile: TextIO, postFile: TextIO):
     # Write all entries to the dict and post files
     postLineNo = 0
     for term, bucket in zip(globHT.slots, globHT.data):

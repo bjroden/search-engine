@@ -2,30 +2,18 @@
 # October 2, 2016
 # Modified by Marion Chiariglione
 # September 22, 2018
-from dataclasses import dataclass
 import hashlib
-from collections import deque
+from typing import Generic, List, TypeVar
 
-@dataclass 
-class PostRecord:
-    docID: int
-    rtf: int
+T = TypeVar("T")
+class HashTable(Generic[T]):
+    size: int
+    uniqueTokens: int
+    totalTokens: int
+    slots: List[str | None]
+    data: List[T | None]
 
-class EntryRecord:
-    def __init__(self, totalFreq: int, data: PostRecord):
-        self.numDocs = 1
-        self.totalFreq = totalFreq
-        self.files = deque()
-        self.files.append(data)
-    
-    def __add__(self, other: 'EntryRecord'):
-        self.numDocs += other.numDocs
-        self.totalFreq += other.totalFreq
-        self.files += other.files
-        return self
-
-class HashTable:
-    def __init__(self, table_size):
+    def __init__(self, table_size: int):
         self.size=table_size # size of hash table
         self.uniqueTokens=0
         self.totalTokens=0
@@ -37,15 +25,15 @@ class HashTable:
         self.totalTokens=0
         self.slots=[None]*self.size # initialize keys
     
-    def hashfunction(self,key): # hash function to find the location
+    def hashfunction(self,key: str) -> int: # hash function to find the location
         h = hashlib.sha1() # any other algorithm found in hashlib.algorithms_guaranteed can be used here
         h.update(bytes(key, encoding="latin-1"))
         return int(h.hexdigest(), 16)%self.size
 
-    def rehash(self, oldhash): # called when index collision happens, using linear probing
+    def rehash(self, oldhash: int) -> int: # called when index collision happens, using linear probing
         return (oldhash+3)%self.size
 
-    def insert(self, key, data): # insert k,v to the hash table
+    def insert(self, key: str, data: T): # insert k,v to the hash table
         hashvalue = self.hashfunction(key)  # location to insert
         if self.slots[hashvalue] == None:
             self.slots[hashvalue] = key
@@ -74,7 +62,7 @@ class HashTable:
                             self.data[nextslot] += data
         self.totalTokens+=1
 
-    def get(self, key):  # get the value by looking for the key
+    def get(self, key: str) -> T:  # get the value by looking for the key
         startslot = self.hashfunction(key)
         data = None
         stop = False
@@ -90,7 +78,7 @@ class HashTable:
                     stop = True
         return data
 
-    def intable(self, key):  # determine whether a key is in the hash table or not
+    def intable(self, key: str) -> bool:  # determine whether a key is in the hash table or not
         startslot = self.hashfunction(key)
         stop = False
         found = False
@@ -104,11 +92,11 @@ class HashTable:
                     stop = True
         return found
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: str) -> T:
         return self.get(key)
 
-    def __setitem__(self, key, data):
+    def __setitem__(self, key: str, data: T):
         self.insert(key,data)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.size
