@@ -5,6 +5,14 @@
 import hashlib
 from typing import Generic, List, TypeVar
 
+def hashfunction(key: str, size: int) -> int: # hash function to find the location
+    h = hashlib.sha1() # any other algorithm found in hashlib.algorithms_guaranteed can be used here
+    h.update(bytes(key, encoding="latin-1"))
+    return int(h.hexdigest(), 16)%size
+
+def rehash(oldhash: int, size: int) -> int: # called when index collision happens, using linear probing
+    return (oldhash+3)%size
+
 T = TypeVar("T")
 class HashTable(Generic[T]):
     size: int
@@ -26,12 +34,10 @@ class HashTable(Generic[T]):
         self.slots=[None]*self.size # initialize keys
     
     def hashfunction(self,key: str) -> int: # hash function to find the location
-        h = hashlib.sha1() # any other algorithm found in hashlib.algorithms_guaranteed can be used here
-        h.update(bytes(key, encoding="latin-1"))
-        return int(h.hexdigest(), 16)%self.size
+        return hashfunction(key, self.size)
 
     def rehash(self, oldhash: int) -> int: # called when index collision happens, using linear probing
-        return (oldhash+3)%self.size
+        return rehash(oldhash, self.size)
 
     def insert(self, key: str, data: T): # insert k,v to the hash table
         hashvalue = self.hashfunction(key)  # location to insert
