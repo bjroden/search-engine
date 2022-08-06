@@ -23,7 +23,7 @@ def getQueryTokens(query: List[str]) -> List[str]:
         tokens += tokenize(i)
     return tokens
 
-def getDictRecords(tokens: List[str], dictFile: TextIO) -> List[PostRecord]:
+def getDictRecords(tokens: List[str], dictFile: TextIO) -> List[DictRecord]:
     # Search dict file for each token
     dictRecords: List[DictRecord] = []
     for i in tokens:
