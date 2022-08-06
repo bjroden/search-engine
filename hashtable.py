@@ -2,8 +2,27 @@
 # October 2, 2016
 # Modified by Marion Chiariglione
 # September 22, 2018
+from dataclasses import dataclass
 import hashlib
 from collections import deque
+
+@dataclass 
+class PostRecord:
+    docID: int
+    rtf: int
+
+class EntryRecord:
+    def __init__(self, totalFreq: int, data: PostRecord):
+        self.numDocs = 1
+        self.totalFreq = totalFreq
+        self.files = deque()
+        self.files.append(data)
+    
+    def __add__(self, other: 'EntryRecord'):
+        self.numDocs += other.numDocs
+        self.totalFreq += other.totalFreq
+        self.files += other.files
+        return self
 
 class HashTable:
     def __init__(self, table_size):
@@ -93,50 +112,3 @@ class HashTable:
 
     def __len__(self):
         return self.size
-
-# Regular hashtable, except values are numDocs + Linked List pairs instead of frequency counts. Used for tracking all doc frequencies
-class GlobalHashTable(HashTable):
-    # Pair of numDocs and Linked List for cross-file referencing
-    class Entry:
-        def __init__(self, data):
-            self.numDocs = 1
-            self.totalFreq = data.totalFreq
-            self.files = deque()
-            self.files.append(data.postrecord)
-        
-        def insert(self, data):
-            self.numDocs += 1
-            self.totalFreq += data.totalFreq
-            self.files.append(data.postrecord)
-
-    def __init__(self, table_size):
-        HashTable.__init__(self, table_size)
-    
-    # Override regular insert, replace frequency count with Entry class
-    def insert(self, key, data): # insert k,v to the hash table
-        hashvalue = self.hashfunction(key)  # location to insert
-        if self.slots[hashvalue] == None:
-            self.slots[hashvalue] = key
-            self.data[hashvalue] = self.Entry(data)
-            self.uniqueTokens += 1
-        else:
-            if self.slots[hashvalue] == key:  # key already exists, update the value
-                self.data[hashvalue].insert(data)
-            else:
-                nextslot=self.rehash(hashvalue) # index collision, using linear probing to find the location
-                if self.slots[nextslot] == None:
-                    self.slots[nextslot] = key
-                    self.data[nextslot] = self.Entry(data)
-                    self.uniqueTokens += 1
-                elif self.slots[nextslot] == key:
-                    self.data[hashvalue].insert(data)
-                else:
-                    while self.slots[nextslot] != None and self.slots[nextslot] != key:
-                        nextslot=self.rehash(nextslot)
-                        if self.slots[nextslot] == None:
-                            self.slots[nextslot] = key
-                            self.data[nextslot] = self.Entry(data)
-                            self.uniqueTokens += 1
-
-                        elif self.slots[nextslot] == key:
-                            self.data[hashvalue].insert(data)

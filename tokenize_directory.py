@@ -1,7 +1,7 @@
 # Given an input directory and output directory from the command line, tokenize a directory of files and create inverted files
 
 from typing import Tuple
-import hashtable
+from hashtable import HashTable, PostRecord, EntryRecord
 from parser import tokenize
 from constants import *
 import sys
@@ -19,8 +19,8 @@ def dictWrite(dictFile, term, numDocs, postLineNo):
     postLineNoString = fixLength(str(postLineNo), START_LENGTH)
     dictFile.write(f"{termString} {numDocsString} {postLineNoString}\n")
 
-def populateStopHT(stopFile) -> hashtable.HashTable:
-    stopHT = hashtable.HashTable(STOP_HT_SIZE)
+def populateStopHT(stopFile) -> HashTable:
+    stopHT = HashTable(STOP_HT_SIZE)
     for token in tokenize(stopFile):
         # Get every token in the "stopwords" file and add them to the stopword hashtable
         if len(token) > 1:
@@ -28,19 +28,15 @@ def populateStopHT(stopFile) -> hashtable.HashTable:
     return stopHT
 
 def postWrite(postFile, docOccurrence, idf):
-    tf = docOccurrence.tf
+    tf = docOccurrence.rtf
     docIDString = fixLength(str(docOccurrence.docID), DOCID_LENGTH)
     weightString = fixLength(str(int(tf * idf * 100000000)), WEIGHT_LENGTH)
     postFile.write(f"{docIDString} {weightString}\n")
 
-def tokenizeFiles(indir, stopHT, mapFile) -> Tuple[int, hashtable.GlobalHashTable]:
-    # Format that global hashtable records are entered in
-    PostRecord = namedtuple('PostRecord', 'docID tf')
-    EntryRecord = namedtuple('EntryRecord', 'totalFreq, postrecord')
-
+def tokenizeFiles(indir, stopHT, mapFile) -> Tuple[int, HashTable]:
     currentDocNo = 0
-    docHT = hashtable.HashTable(DOC_HT_SIZE)
-    globHT = hashtable.GlobalHashTable(GLOB_HT_SIZE)
+    docHT = HashTable(DOC_HT_SIZE)
+    globHT = HashTable(GLOB_HT_SIZE)
     # Tokenize every file in indir
     for fileName in os.listdir(indir):
         with open(f"{indir}/{fileName}", 'r', encoding="latin-1") as file:

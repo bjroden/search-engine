@@ -2,7 +2,7 @@ import sys
 import hashlib
 from parser import tokenize
 from constants import *
-import hashtable
+from hashtable import HashTable
 import heapq
 import argparse
 
@@ -44,7 +44,7 @@ def makeQueryHT(dictRecords, postFile):
     expectedDocs = 0
     for i in dictRecords:
         expectedDocs += int(i[1])
-    queryHT = hashtable.HashTable(expectedDocs * 3)
+    queryHT = HashTable(expectedDocs * 3)
 
     # Calculate doc weights
     for i in dictRecords:
